@@ -2,7 +2,7 @@ package com.cartaxi.launcher
 
 import android.app.Application
 import com.cartaxi.launcher.data.ConfigRepository
-import com.mapbox.maps.MapboxOptions
+import com.mapbox.common.MapboxOptions
 
 class LauncherApp : Application() {
     lateinit var configRepository: ConfigRepository
