@@ -1,0 +1,1 @@
+# proguard (minify tắt)
