@@ -34,7 +34,7 @@ jobs:
         run: |
           echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
 
-      - name: Build release APK
+      -       - name: Build release APK
         env:
           KEYSTORE_FILE: ${{ runner.temp }}/release.keystore
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -42,7 +42,21 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           MAPBOX_DOWNLOADS_TOKEN: ${{ secrets.MAPBOX_DOWNLOADS_TOKEN }}
           MAPBOX_ACCESS_TOKEN: ${{ secrets.MAPBOX_ACCESS_TOKEN }}
-        run: ./gradlew assembleRelease --no-daemon --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew assembleRelease --no-daemon --console=plain 2>&1 | tee build.log
+
+      - name: Show build errors
+        if: failure()
+        run: |
+          {
+            echo '### Lỗi build'
+            echo '```'
+            grep -E '^e: |^w: .*error|error:|Could not|Execution failed|Keystore|keystore' build.log | head -30
+            echo '---'
+            sed -n '/What went wrong/,/^\* Try/p' build.log | head -30
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
